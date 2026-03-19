@@ -1,19 +1,45 @@
+import hashlib
+import os
+
+
 def login(user, password):
-    correct_password = "12345"   # moved to variable (still simple, but better practice)
     
-    if password == correct_password:
+
+    stored_password_hash = os.environ.get("APP_PASSWORD_HASH")
+
+    if not stored_password_hash:
+        raise EnvironmentError("APP_PASSWORD_HASH environment variable is not set.")
+
+    
+    input_hash = hashlib.sha256(password.encode()).hexdigest()
+
+    if input_hash == stored_password_hash:
         print("Login successful")
+        return True
     else:
         print("Login failed")
+        return False
+
 
 def divide(a, b):
+    """
+    Safely divide two numbers, raising a clear error on division by zero.
+    """
     if b == 0:
-        print("Error: Cannot divide by zero")
-        return None
+        raise ValueError("Cannot divide by zero.")
     return a / b
 
-login("admin", "12345")
-result = divide(10, 0)
 
-if result is not None:
-    print(result)
+
+if __name__ == "__main__":
+
+
+    try:
+        login("admin", os.environ.get("APP_PASSWORD", ""))
+    except EnvironmentError as e:
+        print(f"Configuration error: {e}")
+
+    try:
+        print(divide(10, 0))
+    except ValueError as e:
+        print(f"Math error: {e}")
